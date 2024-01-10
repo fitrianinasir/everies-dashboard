@@ -1,3 +1,4 @@
+"use client"
 import Sidebar from "./components/sidebar/sidebar";
 import Dashboard from "./dashboard/page";
 import {NextUIProvider} from "@nextui-org/react";

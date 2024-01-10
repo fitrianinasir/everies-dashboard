@@ -11,7 +11,7 @@ const Sidebar = ({activate}: any) => {
 
   return (
     <div className="h-screen flex flex-col justify-between border-[1px]">
-      <div className="w-full px-5 py-10">
+      <div className="w-full px-20 py-10">
         <img src="/logos/cover.png" alt="" />
       </div>
       <div className="flex flex-col h-4/5">
