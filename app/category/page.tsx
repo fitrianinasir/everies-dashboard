@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../components/sidebar/sidebar";
 import Navbar from "../components/navbar/navbar";
 import {
@@ -14,13 +14,26 @@ import {
   Button,
   NextUIProvider,
   Pagination,
-  SortDescriptor
+  SortDescriptor,
 } from "@nextui-org/react";
-import { columns, users } from "./data";
+import axios from "axios";
 
-type User = (typeof users)[0];
+type Category = {
+  title: string;
+  type: string;
+  img: string;
+  category_order: number;
+};
+
+const columns = [
+  { name: "TITLE", uid: "title", sortable: true },
+  { name: "TYPE", uid: "type", sortable: true },
+  { name: "ORDER", uid: "category_order", sortable: true },
+  { name: "ACTIONS", uid: "actions" },
+];
 
 const Category = () => {
+  const URL = "http://localhost:8080/api";
   const [page, setPage] = useState(1);
   const [filterValue, setFilterValue] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
@@ -30,58 +43,80 @@ const Category = () => {
     direction: "ascending",
   });
 
-  // TABLE DATA LOADER START
-  const renderCell = React.useCallback((user: User, columnKey: React.Key) => {
-    const cellValue = user[columnKey as keyof User];
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryLoaded, setCategoryLoaded] = useState(false);
 
-    switch (columnKey) {
-      case "name":
-        return <p>{user.name}</p>;
-      case "role":
-        return <p>{user.role}</p>;
-      case "actions":
-        return (
-          <div className="relative flex items-center gap-2">
-            <Tooltip content="Edit user">
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <img
-                  width="20"
-                  height="20"
-                  src="https://img.icons8.com/pastel-glyph/20/113946/pencil--v2.png"
-                  alt="pencil--v2"
-                />
-              </span>
-            </Tooltip>
-            <Tooltip color="danger" content="Delete user">
-              <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                <img
-                  width="20"
-                  height="20"
-                  src="https://img.icons8.com/pastel-glyph/20/trash.png"
-                  alt="trash"
-                />
-              </span>
-            </Tooltip>
-          </div>
-        );
-      default:
-        return cellValue;
-    }
+  useEffect(() => {
+    getCategoryData();
   }, []);
 
-  // TABLE DATA LOADER END
+  const getCategoryData = async () => {
+    console.log("GET CATEGORIES CALLED");
+    await axios
+      .get(`${URL}/categories`)
+      .then((res) => {
+        setCategories(res.data.data);
+        setCategoryLoaded(true);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const renderCategoryData = React.useCallback(
+    (category: Category, columnKey: React.Key) => {
+      const categoryVal = category[columnKey as keyof Category];
+
+      switch (columnKey) {
+        case "title":
+          return <p>{category.title}</p>;
+        case "type":
+          return <p>{category.type}</p>;
+        case "img":
+          return <p>{category.img}</p>;
+        case "category_order":
+          return <p>{category.category_order}</p>;
+        case "actions":
+          return (
+            <div className="relative flex items-center gap-2">
+              <Tooltip content="Edit user">
+                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                  <img
+                    width="20"
+                    height="20"
+                    src="https://img.icons8.com/pastel-glyph/20/113946/pencil--v2.png"
+                    alt="pencil--v2"
+                  />
+                </span>
+              </Tooltip>
+              <Tooltip color="danger" content="Delete user">
+                <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                  <img
+                    width="20"
+                    height="20"
+                    src="https://img.icons8.com/pastel-glyph/20/trash.png"
+                    alt="trash"
+                  />
+                </span>
+              </Tooltip>
+            </div>
+          );
+        default:
+          return categoryVal;
+      }
+    },
+    [categories]
+  );
   const hasSearchFilter = Boolean(filterValue);
+
   const filteredItems = React.useMemo(() => {
-    let filteredUsers = [...users];
+    let filteredUsers = [...categories];
 
     if (hasSearchFilter) {
-      filteredUsers = filteredUsers.filter((user) =>
-        user.name.toLowerCase().includes(filterValue.toLowerCase())
+      filteredUsers = filteredUsers.filter((category) =>
+        category.title.toLowerCase().includes(filterValue.toLowerCase())
       );
     }
-
     return filteredUsers;
-  }, [users, filterValue]);
+  }, [categories, categoryLoaded, filterValue]);
 
   // PAGINATION START
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
@@ -171,7 +206,7 @@ const Category = () => {
         <div className="flex justify-between items-end mb-5">
           <div className="relative w-1/3">
             <div className="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
-            <img
+              <img
                 width="20"
                 height="20"
                 src="https://img.icons8.com/pastel-glyph/20/search--v1.png"
@@ -195,7 +230,7 @@ const Category = () => {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 text-small">
-            Total {users.length} users
+            Total {categories.length} users
           </span>
           <label className="flex items-center text-default-400 text-small">
             Rows per page:
@@ -215,21 +250,22 @@ const Category = () => {
     filterValue,
     onSearchChange,
     onRowsPerPageChange,
-    users.length,
+    categories.length,
     hasSearchFilter,
   ]);
   // END OF TOP CONTENT
 
   // SORTED ITEMS
   const sortedItems = React.useMemo(() => {
-    return [...items].sort((a: User, b: User) => {
-      const first = a[sortDescriptor.column as keyof User] as number;
-      const second = b[sortDescriptor.column as keyof User] as number;
+    return [...items].sort((a: Category, b: Category) => {
+      const first = a[sortDescriptor.column as keyof Category] as number;
+      const second = b[sortDescriptor.column as keyof Category] as number;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
   }, [sortDescriptor, items]);
+
   return (
     <NextUIProvider>
       <div className="flex">
@@ -250,10 +286,10 @@ const Category = () => {
                 classNames={{
                   wrapper: "max-h-[382px]",
                 }}
-                selectedKeys={selectedKeys}
-                selectionMode="multiple"
+                // selectedKeys={selectedKeys}
+                // selectionMode="multiple"
                 sortDescriptor={sortDescriptor}
-                onSelectionChange={setSelectedKeys}
+                // onSelectionChange={setSelectedKeys}
                 onSortChange={setSortDescriptor}
                 topContent={topContent}
                 topContentPlacement="outside"
@@ -271,9 +307,11 @@ const Category = () => {
                 </TableHeader>
                 <TableBody emptyContent={"No users found"} items={sortedItems}>
                   {(item) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.title}>
                       {(columnKey) => (
-                        <TableCell>{renderCell(item, columnKey)}</TableCell>
+                        <TableCell>
+                          {renderCategoryData(item, columnKey)}
+                        </TableCell>
                       )}
                     </TableRow>
                   )}
