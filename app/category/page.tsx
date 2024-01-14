@@ -17,6 +17,9 @@ import {
   SortDescriptor,
 } from "@nextui-org/react";
 import axios from "axios";
+import CreatePage from "./add-new";
+
+const URL = "http://localhost:8080/api";
 
 type Category = {
   title: string;
@@ -28,23 +31,23 @@ type Category = {
 const columns = [
   { name: "TITLE", uid: "title", sortable: true },
   { name: "TYPE", uid: "type", sortable: true },
-  { name: "ORDER", uid: "category_order", sortable: true },
   { name: "ACTIONS", uid: "actions" },
 ];
 
 const Category = () => {
-  const URL = "http://localhost:8080/api";
   const [page, setPage] = useState(1);
   const [filterValue, setFilterValue] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryLoaded, setCategoryLoaded] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
   });
-
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoryLoaded, setCategoryLoaded] = useState(false);
 
   useEffect(() => {
     getCategoryData();
@@ -59,6 +62,11 @@ const Category = () => {
         setCategoryLoaded(true);
       })
       .catch((err) => console.log(err));
+  };
+
+  const CreateModalHandler = (val: boolean) => {
+    console.log('val is ', val)
+    setShowCreate(val);
   };
 
   const renderCategoryData = React.useCallback(
@@ -223,7 +231,11 @@ const Category = () => {
             />
           </div>
           <div className="flex">
-            <Button color="primary" endContent={"+"}>
+            <Button
+              color="primary"
+              endContent={"+"}
+              onClick={() => CreateModalHandler(true)}
+            >
               Add New
             </Button>
           </div>
@@ -267,61 +279,80 @@ const Category = () => {
   }, [sortDescriptor, items]);
 
   return (
-    <NextUIProvider>
-      <div className="flex">
-        <div className="w-1/5 h-screen">
-          <Sidebar activate={"category"} />
-        </div>
-        <div className="w-full bg-[#F2F1EB]">
-          <div className="w-full h-[8%] px-5 py-3 bg-white">
-            <Navbar />
+    <div>
+      <div
+        className={`fixed z-10 w-screen h-full ${
+          showCreate ? "opacity-70 bg-black" : "hidden"
+        }`}
+        onClick={() => CreateModalHandler(false)}
+      ></div>
+      <NextUIProvider>
+        <div className="flex">
+          <div className="w-1/5 h-screen">
+            <Sidebar activate={"category"} />
           </div>
-          <div className="w-full h-[92%] p-5">
-            <div className="w-full p-5 bg-white">
-              <h1 className="text-sm font-bold mb-5">CATEGORY</h1>
-              <Table
-                aria-label="Example table with custom cells"
-                bottomContent={bottomContent}
-                bottomContentPlacement="outside"
-                classNames={{
-                  wrapper: "max-h-[382px]",
-                }}
-                // selectedKeys={selectedKeys}
-                // selectionMode="multiple"
-                sortDescriptor={sortDescriptor}
-                // onSelectionChange={setSelectedKeys}
-                onSortChange={setSortDescriptor}
-                topContent={topContent}
-                topContentPlacement="outside"
-              >
-                <TableHeader columns={columns}>
-                  {(column) => (
-                    <TableColumn
-                      key={column.uid}
-                      align={column.uid === "actions" ? "center" : "start"}
-                      allowsSorting={column.sortable}
-                    >
-                      {column.name}
-                    </TableColumn>
-                  )}
-                </TableHeader>
-                <TableBody emptyContent={"No users found"} items={sortedItems}>
-                  {(item) => (
-                    <TableRow key={item.title}>
-                      {(columnKey) => (
-                        <TableCell>
-                          {renderCategoryData(item, columnKey)}
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+          <div className="w-full bg-[#F2F1EB]">
+            <div className="w-full h-[8%] px-5 py-3 bg-white">
+              <Navbar />
+            </div>
+            <div className="w-full h-[92%] p-5">
+              <div className="w-full p-5 bg-white">
+                <h1 className="text-sm font-bold mb-5">CATEGORY</h1>
+                <Table
+                  aria-label="Example table with custom cells"
+                  bottomContent={bottomContent}
+                  bottomContentPlacement="outside"
+                  classNames={{
+                    wrapper: "max-h-[382px]",
+                  }}
+                  // selectedKeys={selectedKeys}
+                  // selectionMode="multiple"
+                  sortDescriptor={sortDescriptor}
+                  // onSelectionChange={setSelectedKeys}
+                  onSortChange={setSortDescriptor}
+                  topContent={topContent}
+                  topContentPlacement="outside"
+                >
+                  <TableHeader columns={columns}>
+                    {(column) => (
+                      <TableColumn
+                        key={column.uid}
+                        align={column.uid === "actions" ? "end" : "start"}
+                        width={column.uid === "actions"? "10%": "50%"}
+                        allowsSorting={column.sortable}
+                      >
+                        {column.name}
+                      </TableColumn>
+                    )}
+                  </TableHeader>
+                  <TableBody
+                    emptyContent={"No users found"}
+                    items={sortedItems}
+                  >
+                    {(item) => (
+                      <TableRow key={item.title}>
+                        {(columnKey) => (
+                          <TableCell>
+                            {renderCategoryData(item, columnKey)}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </NextUIProvider>
+      </NextUIProvider>
+      {showCreate ? (
+        <div className="absolute z-20 w-[40%] top-[10%] left-[30%] bg-white">
+          <CreatePage CreateHandler={CreateModalHandler} />
+        </div>
+      ) : (
+        ""
+      )}
+    </div>
   );
 };
 
