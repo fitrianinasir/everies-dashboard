@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Button, Input, Select, SelectItem } from "@nextui-org/react";
-import { BASE_URL } from "../config";
+import { BASE_URL, TYPES } from "../config";
 import axios from "axios";
 import Swal from "sweetalert2";
 
@@ -10,15 +10,10 @@ type Category = {
   type: string;
   img: string;
 };
-const CreatePage = ({ CreateHandler }: any) => {
+const CreatePage = ({ CreateHandler, ReloadData }: any) => {
   const [data, setData] = useState<Category>({ title: "", type: "", img: "" });
   const [imgLoad, setImgLoad] = useState<string | null>(null);
 
-  const types = [
-    { id: 1, name: "Wear" },
-    { id: 2, name: "Bags" },
-    { id: 3, name: "Shoes" },
-  ];
 
   const uploadImgHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     let uploaded_img = e.target.files?.[0];
@@ -56,7 +51,10 @@ const CreatePage = ({ CreateHandler }: any) => {
           title: "Good job!",
           text: "You clicked the button!",
           icon: "success",
-        }).then((res) => (window.location.href = "/category"));
+        }).then((res) => {
+          CreateHandler(false);
+          ReloadData();
+        });
       })
       .catch((err) => console.log(err));
   };
@@ -87,8 +85,8 @@ const CreatePage = ({ CreateHandler }: any) => {
               }))
             }
           >
-            {types.map((type) => (
-              <SelectItem key={type.id} value={type.name}>
+            {TYPES.map((type) => (
+              <SelectItem key={type.value} value={type.name}>
                 {type.name}
               </SelectItem>
             ))}

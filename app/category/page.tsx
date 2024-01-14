@@ -17,13 +17,15 @@ import {
   SortDescriptor,
 } from "@nextui-org/react";
 import axios from "axios";
+import Swal from "sweetalert2";
 import CreatePage from "./add-new";
-
-const URL = "http://localhost:8080/api";
+import EditPage from "./edit-page";
+import { BASE_URL, TYPES } from "../config";
 
 type Category = {
+  id: number;
   title: string;
-  type: string;
+  type: number;
   img: string;
   category_order: number;
 };
@@ -43,7 +45,8 @@ const Category = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryLoaded, setCategoryLoaded] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
-
+  const [showEdit, setShowEdit] = useState(false);
+  const [editData, setEditData] = useState<Category>()
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
@@ -54,9 +57,8 @@ const Category = () => {
   }, []);
 
   const getCategoryData = async () => {
-    console.log("GET CATEGORIES CALLED");
     await axios
-      .get(`${URL}/categories`)
+      .get(`${BASE_URL}/categories`)
       .then((res) => {
         setCategories(res.data.data);
         setCategoryLoaded(true);
@@ -64,11 +66,48 @@ const Category = () => {
       .catch((err) => console.log(err));
   };
 
-  const CreateModalHandler = (val: boolean) => {
-    console.log('val is ', val)
-    setShowCreate(val);
-  };
+  const CreateModalHandler = (val: boolean) => setShowCreate(val);
+  const ShowEditHandler = (data: Category) => {
+    setEditData(data)
+    setShowEdit(true)
+  }
 
+  const CloseEditHandler = () => setShowEdit(false)
+
+
+
+  const DeleteHandler = (id: number) => {
+    console.log(id);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "All products under this category will be deleted as well",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .delete(`${BASE_URL}/category/${id}`)
+          .then((res) => {
+            Swal.fire({
+              title: "Deleted!",
+              text: "Category has been deleted.",
+              icon: "success",
+            });
+            getCategoryData();
+          })
+          .catch((err) => {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Something went wrong!",
+            });
+          });
+      }
+    });
+  };
   const renderCategoryData = React.useCallback(
     (category: Category, columnKey: React.Key) => {
       const categoryVal = category[columnKey as keyof Category];
@@ -77,7 +116,8 @@ const Category = () => {
         case "title":
           return <p>{category.title}</p>;
         case "type":
-          return <p>{category.type}</p>;
+          let type_name = TYPES.find((type) => type.label == category.type)?.value;
+          return <p>{type_name}</p>;
         case "img":
           return <p>{category.img}</p>;
         case "category_order":
@@ -92,6 +132,7 @@ const Category = () => {
                     height="20"
                     src="https://img.icons8.com/pastel-glyph/20/113946/pencil--v2.png"
                     alt="pencil--v2"
+                    onClick={() => ShowEditHandler(category)}
                   />
                 </span>
               </Tooltip>
@@ -102,6 +143,7 @@ const Category = () => {
                     height="20"
                     src="https://img.icons8.com/pastel-glyph/20/trash.png"
                     alt="trash"
+                    onClick={() => DeleteHandler(category.id)}
                   />
                 </span>
               </Tooltip>
@@ -286,6 +328,12 @@ const Category = () => {
         }`}
         onClick={() => CreateModalHandler(false)}
       ></div>
+      <div
+        className={`fixed z-10 w-screen h-full ${
+          showEdit ? "opacity-70 bg-black" : "hidden"
+        }`}
+        onClick={() => CloseEditHandler()}
+      ></div>
       <NextUIProvider>
         <div className="flex">
           <div className="w-1/5 h-screen">
@@ -318,7 +366,7 @@ const Category = () => {
                       <TableColumn
                         key={column.uid}
                         align={column.uid === "actions" ? "end" : "start"}
-                        width={column.uid === "actions"? "10%": "50%"}
+                        width={column.uid === "actions" ? "10%" : "50%"}
                         allowsSorting={column.sortable}
                       >
                         {column.name}
@@ -330,7 +378,7 @@ const Category = () => {
                     items={sortedItems}
                   >
                     {(item) => (
-                      <TableRow key={item.title}>
+                      <TableRow key={item.id}>
                         {(columnKey) => (
                           <TableCell>
                             {renderCategoryData(item, columnKey)}
@@ -347,7 +395,22 @@ const Category = () => {
       </NextUIProvider>
       {showCreate ? (
         <div className="absolute z-20 w-[40%] top-[10%] left-[30%] bg-white">
-          <CreatePage CreateHandler={CreateModalHandler} />
+          <CreatePage
+            CreateHandler={CreateModalHandler}
+            ReloadData={getCategoryData}
+          />
+        </div>
+      ) : (
+        ""
+      )}
+
+      {showEdit ? (
+        <div className="absolute z-20 w-[40%] top-[10%] left-[30%] bg-white">
+          <EditPage
+            EditHandler={CloseEditHandler}
+            ReloadData={getCategoryData}
+            Data={editData}
+          />
         </div>
       ) : (
         ""
