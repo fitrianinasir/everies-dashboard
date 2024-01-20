@@ -25,7 +25,7 @@ import { BASE_URL, TYPES } from "../config";
 type Category = {
   id: number;
   title: string;
-  type: number;
+  type: string;
   img: string;
   category_order: number;
 };
@@ -76,7 +76,7 @@ const Category = () => {
 
 
 
-  const DeleteHandler = (id: number) => {
+  const DeleteHandler = (id: number, img: string) => {
     console.log(id);
     Swal.fire({
       title: "Are you sure?",
@@ -89,6 +89,8 @@ const Category = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         axios
+        .delete(`${BASE_URL}/img/${img}`).then(res => {
+          axios
           .delete(`${BASE_URL}/category/${id}`)
           .then((res) => {
             Swal.fire({
@@ -105,6 +107,14 @@ const Category = () => {
               text: "Something went wrong!",
             });
           });
+        }).catch((err) => {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Something went wrong!",
+            });
+          });
+        
       }
     });
   };
@@ -116,7 +126,7 @@ const Category = () => {
         case "title":
           return <p>{category.title}</p>;
         case "type":
-          let type_name = TYPES.find((type) => type.label == category.type)?.value;
+          let type_name = TYPES.find((type) => type.value == category.type)?.value;
           return <p>{type_name}</p>;
         case "img":
           return <p>{category.img}</p>;
@@ -143,7 +153,7 @@ const Category = () => {
                     height="20"
                     src="https://img.icons8.com/pastel-glyph/20/trash.png"
                     alt="trash"
-                    onClick={() => DeleteHandler(category.id)}
+                    onClick={() => DeleteHandler(category.id, category.img)}
                   />
                 </span>
               </Tooltip>

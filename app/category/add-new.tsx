@@ -15,6 +15,7 @@ const CreatePage = ({ CreateHandler, ReloadData }: any) => {
   const [imgLoad, setImgLoad] = useState<string | null>(null);
 
 
+
   const uploadImgHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     let uploaded_img = e.target.files?.[0];
     console.log(uploaded_img);
@@ -59,6 +60,18 @@ const CreatePage = ({ CreateHandler, ReloadData }: any) => {
       .catch((err) => console.log(err));
   };
 
+  const cancelHandler = () => {
+    axios
+    .delete(`${BASE_URL}/img/${data.img}`)
+    .then((res) => CreateHandler(false))
+    .catch((err) =>
+      Swal.fire({
+        title: "Failed to update",
+        icon: "warning",
+      })
+    );
+  };
+
   return (
     <div className="h-full flex flex-col justify-between p-7">
       <h1>ADD NEW CATEGORY</h1>
@@ -86,9 +99,9 @@ const CreatePage = ({ CreateHandler, ReloadData }: any) => {
             }
           >
             {TYPES.map((type) => (
-              <SelectItem key={type.value} value={type.name}>
-                {type.name}
-              </SelectItem>
+              <SelectItem key={type.value} value={type.value}>
+              {type.value}
+            </SelectItem>
             ))}
           </Select>
         </div>
@@ -133,7 +146,7 @@ const CreatePage = ({ CreateHandler, ReloadData }: any) => {
         <Button
           color="warning"
           className="mr-1"
-          onClick={() => CreateHandler(false)}
+          onClick={() => cancelHandler()}
         >
           CANCEL
         </Button>

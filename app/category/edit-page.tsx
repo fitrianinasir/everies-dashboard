@@ -13,35 +13,19 @@ type Category = {
 const EditPage = ({ EditHandler, ReloadData, Data }: any) => {
   const [data, setData] = useState<Category>({ title: "", type: "", img: "" });
   const [imgLoad, setImgLoad] = useState<string | null>(null);
-  const selectedType = TYPES.find((type) => type.label == Data.type)?.value;
+  const selectedType = Data.type;
 
   useEffect(() => {
-    getImageHandler()
+    setImgLoad(`${BASE_URL}/image/${Data.img}`);
+    setData({
+      title: Data.title,
+      type: Data.type,
+      img: Data.img,
+    });
   }, []);
 
-  const getImageHandler = () => {
-    axios
-      .get(`${BASE_URL}/img/${Data.img}`)
-      .then((res) => {
-        console.log(res.data)
-        const reader = new FileReader();
-        if (res.data instanceof Blob || res.data instanceof File) {
-          reader.onload = function (e) {
-            // e.target.result contains the data URL
-            const dataURL = res.data
-            console.log(dataURL);
-          };
-    
-          reader.readAsDataURL(res.data)
-        }else {
-          console.error('Selected file is not a Blob or File.');
-        }
-      })
-      .catch((err) => console.log(err));
-  };
   const uploadImgHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     let uploaded_img = e.target.files?.[0];
-    console.log(uploaded_img);
     if (e && uploaded_img) {
       const formData = new FormData();
       formData.append("image", uploaded_img);
@@ -68,19 +52,60 @@ const EditPage = ({ EditHandler, ReloadData, Data }: any) => {
   };
 
   const submitHandler = () => {
-    axios
-      .post(BASE_URL + "/category", data)
-      .then((res) => {
-        Swal.fire({
-          title: "Good job!",
-          text: "You clicked the button!",
-          icon: "success",
-        }).then((res) => {
-          EditHandler();
-          ReloadData();
+    if (Data.img != data.img) {
+      axios
+        .delete(`${BASE_URL}/img/${Data.img}`)
+        .then((res) => {
+          axios
+            .put(`${BASE_URL}/category/${Data.id}`, data)
+            .then((res) => {
+              Swal.fire({
+                text: "Data updated successfully",
+                icon: "success",
+              }).then((res) => {
+                ReloadData();
+                EditHandler(false);
+              });
+            })
+            .catch((err) => console.log(err));
+        })
+        .catch((err) => {
+          Swal.fire({
+            title: "Failed to update",
+            icon: "warning",
+          });
+          EditHandler(false);
         });
-      })
-      .catch((err) => console.log(err));
+    } else {
+      axios
+        .put(`${BASE_URL}/category/${Data.id}`, data)
+        .then((res) => {
+          Swal.fire({
+            text: "Data updated successfully",
+            icon: "success",
+          }).then((res) => {
+            ReloadData();
+            EditHandler(false);
+          });
+        })
+        .catch((err) => console.log(err));
+    }
+  };
+
+  const cancelHandler = () => {
+    if (Data.img != data.img) {
+      axios
+        .delete(`${BASE_URL}/img/${data.img}`)
+        .then((res) => EditHandler(false))
+        .catch((err) =>
+          Swal.fire({
+            title: "Failed to update",
+            icon: "warning",
+          })
+        );
+    }else{
+      EditHandler(false)
+    }
   };
 
   return (
@@ -92,7 +117,7 @@ const EditPage = ({ EditHandler, ReloadData, Data }: any) => {
           <Input
             type="text"
             label="Title"
-            value={Data.title}
+            value={data.title}
             onChange={(e) =>
               setData((prev) => ({
                 ...prev,
@@ -137,7 +162,7 @@ const EditPage = ({ EditHandler, ReloadData, Data }: any) => {
             </label>
           ) : (
             <div className="relative w-full h-[12rem] flex justify-center mt-5">
-              <img src={imgLoad} className="w-[30%]" />
+              <img src={imgLoad} alt="category" className="w-[30%]" />
               <label
                 htmlFor="fileUpload"
                 className="absolute top-0 right-0 text-[10px] font-medium underline tracking wide"
@@ -159,7 +184,7 @@ const EditPage = ({ EditHandler, ReloadData, Data }: any) => {
         <Button
           color="warning"
           className="mr-1"
-          onClick={() => EditHandler(false)}
+          onClick={() => cancelHandler()}
         >
           CANCEL
         </Button>
