@@ -2,6 +2,7 @@
 import Sidebar from "./components/sidebar/sidebar";
 import Dashboard from "./dashboard/page";
 import {NextUIProvider} from "@nextui-org/react";
+
 export default function Home() {
   return (
     <NextUIProvider>

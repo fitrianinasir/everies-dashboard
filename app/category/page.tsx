@@ -46,7 +46,8 @@ const Category = () => {
   const [categoryLoaded, setCategoryLoaded] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [editData, setEditData] = useState<Category>()
+  const [editData, setEditData] = useState<Category>();
+
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
@@ -68,14 +69,12 @@ const Category = () => {
 
   const CreateModalHandler = (val: boolean) => setShowCreate(val);
   const ShowEditHandler = (data: Category) => {
-    setEditData(data)
-    setShowEdit(true)
-  }
+    setEditData(data);
+    setShowEdit(true);
+  };
 
-  const CloseEditHandler = () => setShowEdit(false)
-
-
-
+  const CloseEditHandler = () => setShowEdit(false);
+  
   const DeleteHandler = (id: number, img: string) => {
     console.log(id);
     Swal.fire({
@@ -89,16 +88,25 @@ const Category = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-        .delete(`${BASE_URL}/img/${img}`).then(res => {
-          axios
-          .delete(`${BASE_URL}/category/${id}`)
+          .delete(`${BASE_URL}/img/${img}`)
           .then((res) => {
-            Swal.fire({
-              title: "Deleted!",
-              text: "Category has been deleted.",
-              icon: "success",
-            });
-            getCategoryData();
+            axios
+              .delete(`${BASE_URL}/category/${id}`)
+              .then((res) => {
+                Swal.fire({
+                  title: "Deleted!",
+                  text: "Category has been deleted.",
+                  icon: "success",
+                });
+                getCategoryData();
+              })
+              .catch((err) => {
+                Swal.fire({
+                  icon: "error",
+                  title: "Oops...",
+                  text: "Something went wrong!",
+                });
+              });
           })
           .catch((err) => {
             Swal.fire({
@@ -107,14 +115,6 @@ const Category = () => {
               text: "Something went wrong!",
             });
           });
-        }).catch((err) => {
-            Swal.fire({
-              icon: "error",
-              title: "Oops...",
-              text: "Something went wrong!",
-            });
-          });
-        
       }
     });
   };
@@ -126,7 +126,9 @@ const Category = () => {
         case "title":
           return <p>{category.title}</p>;
         case "type":
-          let type_name = TYPES.find((type) => type.value == category.type)?.value;
+          let type_name = TYPES.find(
+            (type) => type.value == category.type
+          )?.value;
           return <p>{type_name}</p>;
         case "img":
           return <p>{category.img}</p>;
@@ -282,7 +284,7 @@ const Category = () => {
               placeholder="Search Name.."
             />
           </div>
-          <div className="flex">
+          <div className="flex gap-2">
             <Button
               color="primary"
               endContent={"+"}
@@ -344,6 +346,7 @@ const Category = () => {
         }`}
         onClick={() => CloseEditHandler()}
       ></div>
+
       <NextUIProvider>
         <div className="flex">
           <div className="w-1/5 h-screen">
