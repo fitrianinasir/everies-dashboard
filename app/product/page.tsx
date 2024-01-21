@@ -2,10 +2,34 @@
 import Sidebar from "../components/sidebar/sidebar";
 import Navbar from "../components/navbar/navbar";
 import { Button, NextUIProvider } from "@nextui-org/react";
-import { BASE_URL, PRODUCTS } from "../config";
+import { BASE_URL } from "../config";
 import ProductImgs from "./product-imgs";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
+type PRODUCT = {
+  id: number;
+  id_sub_category: number;
+  title: string;
+  img: string;
+  price: number;
+  stock_by_type: string;
+  stock_by_size: string;
+  rate: number;
+  sold: number;
+};
 const Product = () => {
+  const [products, setProducts] = useState<PRODUCT[]>([]);
+
+  useEffect(() => {
+    getProducts();
+  }, []);
+  const getProducts = async () => {
+    await axios
+      .get(`${BASE_URL}/products`)
+      .then((res) => setProducts(res.data.data))
+      .catch((err) => console.log(err));
+  };
   const convertToRp = (num: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -13,7 +37,6 @@ const Product = () => {
       maximumFractionDigits: 0,
     }).format(num);
   };
-
 
   return (
     <NextUIProvider>
@@ -37,11 +60,11 @@ const Product = () => {
 
               {/* PRODUCT LIST */}
               <div className="grid grid-cols-7 gap-6 mt-5">
-                {PRODUCTS.map((product, index) => (
+                {products.map((product, index) => (
                   <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow">
                     <div className="p-3">
                       <ProductImgs images={JSON.parse(product.img)} />
-                      <h6 className="text-sm font-semibold tracking-tight text-gray-900">
+                      <h6 className="mt-3 text-sm font-semibold tracking-tight text-gray-900">
                         {product.title}
                       </h6>
 

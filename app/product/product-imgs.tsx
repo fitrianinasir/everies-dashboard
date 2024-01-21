@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 
 const ProductImgs = ({ images }: any) => {
   const [active, setActive] = useState(0);
+  const [showHover, setShowHover] = useState(false);
 
   const nextHandler = () => {
-    if (active < images.length-1) {
+    if (active < images.length - 1) {
       setActive(active + 1);
     }
   };
@@ -15,14 +16,39 @@ const ProductImgs = ({ images }: any) => {
       setActive(active - 1);
     }
   };
+
   return (
-    <div className="relative w-full">
+    <div className="relative w-full group">
+      <div className="absolute top-0 right-0 bg-white opacity-30 z-50 cursor-pointer">
+        <img
+          src="icons/edit.png"
+          alt=""
+          className="w-5 h-5"
+          onClick={() => setShowHover(!showHover)}
+        />
+      </div>
       <div className="relative h-56 overflow-hidden">
         <img src={`images/${images[active]}`} alt="" />
+        {/* <div className="absolute h-full w-full bg-black/50 flex flex-col gap-2 items-center justify-center group-hover:bottom-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <button className="bg-white text-xs text-black w-3/6 py-1 rounded-full">Edit</button>
+          <button className="bg-white text-xs text-black w-3/6 py-1 rounded-full">Delete</button>
+        </div> */}
+        <div
+          className={`absolute h-full w-full bg-black/50 flex flex-col gap-2 items-center justify-center bottom-0 opacity-100 ${
+            showHover ? "" : "hidden"
+          }`}
+        >
+          <button className="bg-white text-xs text-black w-3/6 py-1 rounded-full">
+            Edit
+          </button>
+          <button className="bg-white text-xs text-black w-3/6 py-1 rounded-full">
+            Delete
+          </button>
+        </div>
       </div>
       <button
         type="button"
-        className="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
+        className="absolute bottom-0 start-0 z-10 flex items-center justify-center h-3/5 px-2 cursor-pointer group focus:outline-none"
         onClick={() => prevHandler()}
       >
         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
@@ -46,7 +72,7 @@ const ProductImgs = ({ images }: any) => {
       </button>
       <button
         type="button"
-        className="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
+        className="absolute bottom-0 end-0 z-10 flex items-center justify-center h-3/5 px-2 cursor-pointer group focus:outline-none"
         onClick={() => nextHandler()}
       >
         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
