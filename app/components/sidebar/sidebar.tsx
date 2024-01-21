@@ -41,8 +41,8 @@ const Sidebar = ({ activate }: any) => {
               active == "type" ? "bg-slate-200" : ""
             }`}
           >
-            <img src="/icons/category.png" className="w-[23px] h-[23px] " />
-            <span className="ml-2 text-sm">Types</span>
+            <img src="/icons/list.png" className="w-[23px] h-[23px] " />
+            <span className="ml-2 text-sm">Category Types</span>
           </div>
         </Link>
         <Link href="/product">

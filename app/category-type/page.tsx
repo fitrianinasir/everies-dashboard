@@ -30,47 +30,40 @@ const columns = [
 
 const CategoryType = () => {
   const [data, setData] = useState<TYPE[]>([]);
-  const [dataLoaded, setDataLoaded] = useState(true);
-
   const [type, setType] = useState<TYPE>({ id: 0, name: "" });
-  const [showCreate, setShowCreate] = useState(false);
-  const [showEdit, setShowEdit] = useState(false);
-  const [editData, setEditData] = useState<TYPE>();
+  const [action, setAction] = useState<string>("");
+  const [isActionTriggered, setActionTriggered] = useState<boolean>(false);
+  const [countAction, setCountAction] = useState<number>(2);
+
   useEffect(() => {
     getTypeData();
   }, []);
+
+  useEffect(() => {
+    if (isActionTriggered) {
+      const toastDisappear = setInterval(() => {
+        setCountAction((prev) => prev - 1);
+      }, 1000);
+
+      if (countAction === 0) {
+        clearInterval(toastDisappear);
+        setActionTriggered(false);
+      }
+      return () => clearInterval(toastDisappear);
+    }
+  }, [isActionTriggered, countAction]);
+
   const getTypeData = async () => {
     await axios
       .get(`${BASE_URL}/category-types`)
       .then((res) => {
         setData(res.data.data);
-        setDataLoaded(true);
       })
       .catch((err) => console.log(err));
   };
 
   const ResetType = () => {
     setType({ id: 0, name: "" });
-  };
-
-  const DeleteHandler = (id: number) => {
-    axios
-      .delete(`${BASE_URL}/category-type/${id}`)
-      .then((res) => {
-        Swal.fire({
-          title: "Deleted!",
-          text: "Type has been deleted.",
-          icon: "success",
-        });
-        getTypeData();
-      })
-      .catch((err) => {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Something went wrong!",
-        });
-      });
   };
 
   const renderTypeData = React.useCallback(
@@ -114,33 +107,29 @@ const CategoryType = () => {
     [data]
   );
 
+  const handlerAfterAction = () => {
+    ResetType();
+    getTypeData();
+    setActionTriggered(true);
+    setCountAction(2)
+    console.log(countAction)
+  };
+
   const submitHandler = () => {
     if (type.id == 0 && type.name.length > 0) {
       axios
         .post(BASE_URL + "/category-type", type)
         .then((res) => {
-          Swal.fire({
-            title: "Success",
-            text: "Type added successfully",
-            icon: "success",
-          }).then((res) => {
-            ResetType();
-            getTypeData();
-          });
+          handlerAfterAction();
+          setAction("added");
         })
         .catch((err) => console.log(err));
     } else if (type.id >= 1) {
       axios
         .put(`${BASE_URL}/category-type/${type.id}`, type)
         .then((res) => {
-          Swal.fire({
-            title: "Success",
-            text: "Type updated successfully",
-            icon: "success",
-          }).then((res) => {
-            ResetType();
-            getTypeData();
-          });
+          handlerAfterAction();
+          setAction("updated");
         })
         .catch((err) => console.log(err));
     } else {
@@ -150,6 +139,23 @@ const CategoryType = () => {
       });
     }
   };
+
+  const DeleteHandler = (id: number) => {
+    axios
+      .delete(`${BASE_URL}/category-type/${id}`)
+      .then((res) => {
+        handlerAfterAction();
+        setAction("deleted");
+      })
+      .catch((err) => {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Something went wrong!",
+        });
+      });
+  };
+
   return (
     <NextUIProvider>
       <div className="flex">
@@ -216,6 +222,54 @@ const CategoryType = () => {
                 </TableBody>
               </Table>
             </div>
+            {isActionTriggered ? (
+              <div
+                id="toast-success"
+                className="absolute right-5 bottom-5 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow"
+                role="alert"
+              >
+                <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg">
+                  <svg
+                    className="w-5 h-5"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
+                  </svg>
+                  <span className="sr-only">Check icon</span>
+                </div>
+                <div className="ms-3 text-sm font-normal">
+                  Type {action} successfully.
+                </div>
+                <button
+                  type="button"
+                  className="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
+                  data-dismiss-target="#toast-success"
+                  aria-label="Close"
+                >
+                  <span className="sr-only">Close</span>
+                  <svg
+                    className="w-3 h-3"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 14 14"
+                  >
+                    <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                    />
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              ""
+            )}
           </div>
         </div>
       </div>

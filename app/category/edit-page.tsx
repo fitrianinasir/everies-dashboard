@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Button, Input, Select, SelectItem } from "@nextui-org/react";
-import { BASE_URL, TYPES, animals } from "../config";
+import { BASE_URL } from "../config";
 import axios from "axios";
 import Swal from "sweetalert2";
 
@@ -10,7 +10,13 @@ type Category = {
   type: string;
   img: string;
 };
-const EditPage = ({ EditHandler, ReloadData, Data }: any) => {
+
+type TYPE = {
+  id: number;
+  name: string;
+};
+
+const EditPage = ({ EditHandler, ReloadData, Data, TypeData }: any) => {
   const [data, setData] = useState<Category>({ title: "", type: "", img: "" });
   const [imgLoad, setImgLoad] = useState<string | null>(null);
   const selectedType = Data.type;
@@ -136,9 +142,9 @@ const EditPage = ({ EditHandler, ReloadData, Data }: any) => {
               }));
             }}
           >
-            {TYPES.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.value}
+            {TypeData.map((type: TYPE) => (
+              <SelectItem key={type.name} value={type.name}>
+                {type.name}
               </SelectItem>
             ))}
           </Select>

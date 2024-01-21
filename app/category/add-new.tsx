@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Input, Select, SelectItem } from "@nextui-org/react";
-import { BASE_URL, TYPES } from "../config";
+import { BASE_URL } from "../config";
 import axios from "axios";
 import Swal from "sweetalert2";
 
@@ -10,10 +10,15 @@ type Category = {
   type: string;
   img: string;
 };
-const CreatePage = ({ CreateHandler, ReloadData }: any) => {
+
+type TYPE = {
+  id: number;
+  name: string;
+};
+
+const CreatePage = ({ CreateHandler, ReloadData, TypeData }: any) => {
   const [data, setData] = useState<Category>({ title: "", type: "", img: "" });
   const [imgLoad, setImgLoad] = useState<string | null>(null);
-
 
 
   const uploadImgHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,14 +67,14 @@ const CreatePage = ({ CreateHandler, ReloadData }: any) => {
 
   const cancelHandler = () => {
     axios
-    .delete(`${BASE_URL}/img/${data.img}`)
-    .then((res) => CreateHandler(false))
-    .catch((err) =>
-      Swal.fire({
-        title: "Failed to update",
-        icon: "warning",
-      })
-    );
+      .delete(`${BASE_URL}/img/${data.img}`)
+      .then((res) => CreateHandler(false))
+      .catch((err) =>
+        Swal.fire({
+          title: "Failed to update",
+          icon: "warning",
+        })
+      );
   };
 
   return (
@@ -98,10 +103,10 @@ const CreatePage = ({ CreateHandler, ReloadData }: any) => {
               }))
             }
           >
-            {TYPES.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-              {type.value}
-            </SelectItem>
+            {TypeData.map((type: TYPE) => (
+              <SelectItem key={type.name} value={type.name}>
+                {type.name}
+              </SelectItem>
             ))}
           </Select>
         </div>

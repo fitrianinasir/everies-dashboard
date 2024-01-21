@@ -20,7 +20,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import CreatePage from "./add-new";
 import EditPage from "./edit-page";
-import { BASE_URL, TYPES } from "../config";
+import { BASE_URL } from "../config";
 
 type Category = {
   id: number;
@@ -30,6 +30,10 @@ type Category = {
   category_order: number;
 };
 
+type TYPE = {
+  id: number;
+  name: string;
+};
 const columns = [
   { name: "TITLE", uid: "title", sortable: true },
   { name: "TYPE", uid: "type", sortable: true },
@@ -43,6 +47,7 @@ const Category = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [categories, setCategories] = useState<Category[]>([]);
+  const [types2, setTypes2] = useState<TYPE[]>([]);
   const [categoryLoaded, setCategoryLoaded] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -57,12 +62,26 @@ const Category = () => {
     getCategoryData();
   }, []);
 
+  useEffect(() => {
+    getTypeData();
+  }, []);
+
   const getCategoryData = async () => {
     await axios
       .get(`${BASE_URL}/categories`)
       .then((res) => {
         setCategories(res.data.data);
         setCategoryLoaded(true);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const getTypeData = async () => {
+    console.log("called get type in category");
+    await axios
+      .get(`${BASE_URL}/category-types`)
+      .then((res) => {
+        setTypes2(res.data.data);
       })
       .catch((err) => console.log(err));
   };
@@ -74,7 +93,7 @@ const Category = () => {
   };
 
   const CloseEditHandler = () => setShowEdit(false);
-  
+
   const DeleteHandler = (id: number, img: string) => {
     console.log(id);
     Swal.fire({
@@ -126,10 +145,8 @@ const Category = () => {
         case "title":
           return <p>{category.title}</p>;
         case "type":
-          let type_name = TYPES.find(
-            (type) => type.value == category.type
-          )?.value;
-          return <p>{type_name}</p>;
+          let type = types2.find((t) => t.name == category.type)?.name;
+          return <p>{type}</p>;
         case "img":
           return <p>{category.img}</p>;
         case "category_order":
@@ -411,6 +428,7 @@ const Category = () => {
           <CreatePage
             CreateHandler={CreateModalHandler}
             ReloadData={getCategoryData}
+            TypeData = {types2}
           />
         </div>
       ) : (
@@ -423,6 +441,7 @@ const Category = () => {
             EditHandler={CloseEditHandler}
             ReloadData={getCategoryData}
             Data={editData}
+            TypeData = {types2}
           />
         </div>
       ) : (
