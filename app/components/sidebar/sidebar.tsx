@@ -22,7 +22,7 @@ const Sidebar = ({ activate }: any) => {
             }`}
           >
             <img src="/icons/dashboard.png" className="w-[25px] h-[25px] " />
-            <span className="ml-2 text-sm">Dashboard</span>
+            <span className="ml-2 text-sm">Monitoring</span>
           </div>
         </Link>
         <Link href="/category">

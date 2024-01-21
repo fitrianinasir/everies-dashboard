@@ -1,5 +1,96 @@
 import React from "react";
 
-const BASE_URL = 'http://localhost:8080/api'
+const BASE_URL = "http://localhost:8080/api";
 
-export{BASE_URL}
+const PRODUCTS = [
+  {
+    id: 1,
+    id_sub_category: 1,
+    title: "white shirt",
+    img: '["1.jpg", "2.jpg", "3.jpg"]',
+    price: 100000,
+    stock_by_type: "[{L: {White: 7, Black: 2}, M: {White:1, Black:0}}]",
+    stock_by_size: "[{White: {S: 7, M: 2, L: 3, XL: 5}}]",
+    rate: 3,
+    sold: 27,
+  },
+  {
+    id: 2,
+    id_sub_category: 1,
+    title: "white shirt",
+    img: '["2.jpg", "3.jpg", "1.jpg"]',
+    price: 100000,
+    stock_by_type: "[{L: {White: 7, Black: 2}, M: {White:1, Black:0}}]",
+    stock_by_size: "[{White: {S: 7, M: 2, L: 3, XL: 5}}]",
+    rate: 3,
+    sold: 27,
+  },
+  {
+    id: 3,
+    id_sub_category: 1,
+    title: "white shirt",
+    img: '["3.jpg", "2.jpg", "1.jpg"]',
+    price: 100000,
+    stock_by_type: "[{L: {White: 7, Black: 2}, M: {White:1, Black:0}}]",
+    stock_by_size: "[{White: {S: 7, M: 2, L: 3, XL: 5}}]",
+    rate: 3,
+    sold: 27,
+  },
+  {
+    id: 4,
+    id_sub_category: 1,
+    title: "white shirt",
+    img: '["1.jpg", "2.jpg", "3.jpg"]',
+    price: 100000,
+    stock_by_type: "[{L: {White: 7, Black: 2}, M: {White:1, Black:0}}]",
+    stock_by_size: "[{White: {S: 7, M: 2, L: 3, XL: 5}}]",
+    rate: 3,
+    sold: 27,
+  },
+  {
+    id: 5,
+    id_sub_category: 1,
+    title: "white shirt",
+    img: '["1.jpg", "2.jpg", "3.jpg"]',
+    price: 100000,
+    stock_by_type: "[{L: {White: 7, Black: 2}, M: {White:1, Black:0}}]",
+    stock_by_size: "[{White: {S: 7, M: 2, L: 3, XL: 5}}]",
+    rate: 3,
+    sold: 27,
+  },
+  {
+    id: 6,
+    id_sub_category: 1,
+    title: "white shirt",
+    img: '["1.jpg", "2.jpg", "3.jpg"]',
+    price: 100000,
+    stock_by_type: "[{L: {White: 7, Black: 2}, M: {White:1, Black:0}}]",
+    stock_by_size: "[{White: {S: 7, M: 2, L: 3, XL: 5}}]",
+    rate: 3,
+    sold: 27,
+  },
+  {
+    id: 7,
+    id_sub_category: 1,
+    title: "white shirt",
+    img: '["1.jpg", "2.jpg", "3.jpg"]',
+    price: 100000,
+    stock_by_type: "[{L: {White: 7, Black: 2}, M: {White:1, Black:0}}]",
+    stock_by_size: "[{White: {S: 7, M: 2, L: 3, XL: 5}}]",
+    rate: 3,
+    sold: 27,
+  },
+  {
+    id: 8,
+    id_sub_category: 1,
+    title: "white shirt",
+    img: '["1.jpg", "2.jpg", "3.jpg"]',
+    price: 100000,
+    stock_by_type: "[{L: {White: 7, Black: 2}, M: {White:1, Black:0}}]",
+    stock_by_size: "[{White: {S: 7, M: 2, L: 3, XL: 5}}]",
+    rate: 3,
+    sold: 27,
+  },
+];
+
+export { BASE_URL, PRODUCTS };
