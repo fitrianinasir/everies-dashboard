@@ -20,16 +20,24 @@ type PRODUCT = {
 };
 const Product = () => {
   const [products, setProducts] = useState<PRODUCT[]>([]);
-
+  const [showSettings, setShowSettings] = useState<any>([])
   useEffect(() => {
     getProducts();
   }, []);
+
+
   const getProducts = async () => {
     await axios
       .get(`${BASE_URL}/products`)
-      .then((res) => setProducts(res.data.data))
+      .then((res) => {
+        setProducts(res.data.data)
+        const productsLength=res.data.data.length
+        const totalProducts = Array(productsLength).fill(0);
+        setShowSettings(totalProducts)
+      })
       .catch((err) => console.log(err));
   };
+
   const convertToRp = (num: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -37,6 +45,17 @@ const Product = () => {
       maximumFractionDigits: 0,
     }).format(num);
   };
+
+
+  const settingsHandler = (idx: number) => {
+    const changeSettings = Array(showSettings.length).fill(0);
+    if(showSettings[idx]===1){
+      changeSettings[idx]=0
+    }else{
+      changeSettings[idx]=1
+    }
+    setShowSettings(changeSettings)
+  }
 
   return (
     <NextUIProvider>
@@ -63,7 +82,7 @@ const Product = () => {
                 {products.map((product, index) => (
                   <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow">
                     <div className="p-3">
-                      <ProductImgs images={JSON.parse(product.img)} />
+                      <ProductImgs images={JSON.parse(product.img)} currActiveVal={index} settingsControl={settingsHandler} isActive={showSettings[index]} />
                       <h6 className="mt-3 text-sm font-semibold tracking-tight text-gray-900">
                         {product.title}
                       </h6>
