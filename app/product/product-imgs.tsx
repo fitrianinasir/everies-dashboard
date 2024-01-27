@@ -27,7 +27,7 @@ const ProductImgs = ({
 
   return (
     <div className="relative w-full group">
-      <div className="absolute top-0 right-0 bg-white opacity-30 z-50 cursor-pointer">
+      <div className="absolute top-0 right-0 bg-white opacity-30 z-30 cursor-pointer">
         <img
           src="icons/edit.png"
           alt=""
