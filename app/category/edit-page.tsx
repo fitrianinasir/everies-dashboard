@@ -168,7 +168,7 @@ const EditPage = ({ EditHandler, ReloadData, Data, TypeData }: any) => {
             </label>
           ) : (
             <div className="relative w-full h-[12rem] flex justify-center mt-5">
-              <img src={imgLoad} alt="category" className="w-[30%]" />
+              <img src={imgLoad} alt="category"/>
               <label
                 htmlFor="fileUpload"
                 className="absolute top-0 right-0 text-[10px] font-medium underline tracking wide"

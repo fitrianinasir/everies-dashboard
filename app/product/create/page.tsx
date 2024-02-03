@@ -110,6 +110,8 @@ const AddProduct = () => {
     setStockBySize(dataTmp);
   };
 
+  
+
   return (
     <NextUIProvider>
       <div className="flex">
@@ -120,7 +122,6 @@ const AddProduct = () => {
           <div className="w-full h-[8%] px-5 py-3 bg-white">
             <Navbar />
           </div>
-
           <div className="w-full h-[92%] p-5">
             <div className="w-full p-5 bg-white">
               <div className="flex justify-between">

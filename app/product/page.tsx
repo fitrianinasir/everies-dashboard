@@ -26,8 +26,7 @@ const Product = () => {
   const [showSettings, setShowSettings] = useState<any>([]);
 
   useEffect(() => {
-    getProducts();
-    
+    getProducts();   
   }, []);
 
 

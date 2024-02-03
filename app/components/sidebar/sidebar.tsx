@@ -55,6 +55,16 @@ const Sidebar = ({ activate }: any) => {
             <span className="ml-2 text-sm">Product</span>
           </div>
         </Link>
+        <Link href="/product-type">
+          <div
+            className={`p-2 flex items-center mb-1 ${
+              active == "product-type" ? "bg-slate-200" : ""
+            }`}
+          >
+            <img src="/icons/product.png" className="w-[23px] h-[23px] " />
+            <span className="ml-2 text-sm">Product Type</span>
+          </div>
+        </Link>
       </div>
 
       <div className="w-full h-1/6 flex flex-col justify-end">
