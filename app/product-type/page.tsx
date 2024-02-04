@@ -27,10 +27,14 @@ type TYPE = {
   category_name: string;
 };
 
-type Category = {
+type RawCategory = {
   id: number;
   title: string;
-  type: string | undefined;
+  type: string;
+};
+type Category = {
+  id: number;
+  name: string;
 };
 
 const columns = [
@@ -40,14 +44,15 @@ const columns = [
 ];
 
 const ProductType = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
   const [types, setTypes] = useState<TYPE[]>([]);
   const [type, setType] = useState<TYPE>({
     id: 0,
     category_id: 0,
     title: "",
-    category_name: "default",
+    category_name: "",
   });
-  const [categories, setCategories] = useState<Category[]>([]);
+
   const [action, setAction] = useState<string>("");
   const [isActionTriggered, setActionTriggered] = useState<boolean>(false);
   const [countAction, setCountAction] = useState<number>(2);
@@ -75,7 +80,16 @@ const ProductType = () => {
     await axios
       .get(`${BASE_URL}/categories`)
       .then((res) => {
-        setCategories(res.data.data);
+        let modifdata: Category[] = [];
+        let rawdata: RawCategory[] = res.data.data;
+        rawdata.map((i): any => {
+          let tmp = {
+            id: i.id,
+            name: `${i.title} ${i.type}`,
+          };
+          modifdata.push(tmp);
+        });
+        setCategories(modifdata);
       })
       .catch((err) => console.log(err));
   };
@@ -89,57 +103,18 @@ const ProductType = () => {
       .catch((err) => console.log(err));
   };
 
+
+  // ============== HANDLER ===============
   const ResetType = () => {
     setType({ id: 0, category_id: 0, title: "", category_name: "" });
   };
 
-  const renderTypeData = React.useCallback(
-    (type: TYPE, columnKey: React.Key) => {
-      const typeVal = type[columnKey as keyof TYPE];
-
-      switch (columnKey) {
-        case "name":
-          return <p>{type.title}</p>;
-        case "actions":
-          return (
-            <div className="relative flex items-center gap-2">
-              <Tooltip content="Edit type">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <img
-                    width="20"
-                    height="20"
-                    src="https://img.icons8.com/pastel-glyph/20/113946/pencil--v2.png"
-                    alt="pencil--v2"
-                    onClick={() =>
-                      setType({
-                        id: type.id,
-                        category_id: type.category_id,
-                        title: type.title,
-                        category_name: type.category_name,
-                      })
-                    }
-                  />
-                </span>
-              </Tooltip>
-              <Tooltip color="danger" content="Delete type">
-                <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                  <img
-                    width="20"
-                    height="20"
-                    src="https://img.icons8.com/pastel-glyph/20/trash.png"
-                    alt="trash"
-                    onClick={() => DeleteHandler(type.id)}
-                  />
-                </span>
-              </Tooltip>
-            </div>
-          );
-        default:
-          return typeVal;
-      }
-    },
-    [types]
-  );
+  const handleEdit = (id: number) => {
+    const editType = types.find((type) => type.id == id);
+    if (editType) {
+      setType(editType);
+    }
+  };
 
   const handlerAfterAction = () => {
     ResetType();
@@ -150,14 +125,12 @@ const ProductType = () => {
 
   const handlingSelect = (e: any) => {
     const selectedID = parseInt(e.target.value);
-    const selectedTmp = categories.find(
-      (cat) => cat.id == parseInt(e.target.value)
-    );
-    const selectedValue = `${selectedTmp?.title} ${selectedTmp?.type}`;
+    const selectedTmp = categories.find((cat) => cat.id == selectedID)?.name;
+
     setType((prev) => ({
       ...prev,
       category_id: selectedID,
-      category_name: selectedValue,
+      category_name: selectedTmp || "",
     }));
   };
 
@@ -202,6 +175,47 @@ const ProductType = () => {
       });
   };
 
+  const renderTypeData = React.useCallback(
+    (type: TYPE, columnKey: React.Key) => {
+      const typeVal = type[columnKey as keyof TYPE];
+
+      switch (columnKey) {
+        case "name":
+          return <p>{type.title}</p>;
+        case "actions":
+          return (
+            <div className="relative flex items-center gap-2">
+              <Tooltip content="Edit type">
+                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                  <img
+                    width="20"
+                    height="20"
+                    src="https://img.icons8.com/pastel-glyph/20/113946/pencil--v2.png"
+                    alt="pencil--v2"
+                    onClick={() => handleEdit(type.id)}
+                  />
+                </span>
+              </Tooltip>
+              <Tooltip color="danger" content="Delete type">
+                <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                  <img
+                    width="20"
+                    height="20"
+                    src="https://img.icons8.com/pastel-glyph/20/trash.png"
+                    alt="trash"
+                    onClick={() => DeleteHandler(type.id)}
+                  />
+                </span>
+              </Tooltip>
+            </div>
+          );
+        default:
+          return typeVal;
+      }
+    },
+    [types]
+  );
+
   return (
     <NextUIProvider>
       <div className="flex">
@@ -232,11 +246,16 @@ const ProductType = () => {
                   <Select
                     label="This product type is part of"
                     className="w-2/6"
+                    selectedKeys={[type.category_id.toString()]}
                     onChange={(e) => handlingSelect(e)}
                   >
                     {categories.map((category: Category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {`${category.title} ${category.type}`}
+                      <SelectItem
+                        key={category.id}
+                        value={category.name}
+                        textValue={category.name}
+                      >
+                        {category.name}
                       </SelectItem>
                     ))}
                   </Select>
@@ -318,9 +337,9 @@ const ProductType = () => {
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap ="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
                     />
                   </svg>

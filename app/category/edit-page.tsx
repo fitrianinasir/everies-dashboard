@@ -22,6 +22,7 @@ const EditPage = ({ EditHandler, ReloadData, Data, TypeData }: any) => {
   const selectedType = Data.type;
 
   useEffect(() => {
+    console.log('selected type is ', selectedType)
     setImgLoad(`${BASE_URL}/image/${Data.img}`);
     setData({
       title: Data.title,
