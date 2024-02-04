@@ -85,6 +85,9 @@ const AddProduct = () => {
     useState<STOCK_BY_SIZE[]>(initialStockBySize);
 
   const [product, setProduct] = useState<PRODUCT>(initialFields);
+  const [imgLoad, setImgLoad] = useState<string | null>(null);
+  const [imgsLoad, setImgsLoad] = useState<any>([null, null, null, null, null]);
+  const [imgs, setImgs] = useState<any>([null, null, null, null, null]);
 
   useEffect(() => {
     getCategoryData();
@@ -195,8 +198,8 @@ const AddProduct = () => {
       );
 
       const existingTypeIdx = stockByTypeResult.findIndex((existingItem) =>
-      existingItem.hasOwnProperty(color)
-    );
+        existingItem.hasOwnProperty(color)
+      );
 
       if (existingSizeIdx !== -1) {
         // Update existing entry by adding new color and amount
@@ -215,21 +218,47 @@ const AddProduct = () => {
         tmpType[color] = { [size]: amount };
         stockByTypeResult.push(tmpType);
       }
-    });    
+    });
 
     setProduct((prev) => ({
       ...prev,
       stock_by_size: stockBySizeResult,
-      stock_by_type: stockByTypeResult
-    }))
+      stock_by_type: stockByTypeResult,
+    }));
+  };
+
+  const uploadImgHandler = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    idx: number
+  ) => {
+    let imgsTmp = [...imgs];
+    let uploaded_img = e.target.files?.[0];
+    imgsTmp[idx] = uploaded_img;
+    setImgs(imgsTmp);
+    let imgsLoadTmp = [...imgsLoad];
+    if (e && uploaded_img) {
+      const formData = new FormData();
+      formData.append("image", uploaded_img);
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result == "string") {
+          setImgLoad(reader.result);
+          imgsLoadTmp[idx] = reader.result;
+        }
+      };
+      reader.readAsDataURL(uploaded_img);
+      setImgsLoad(imgsLoadTmp);
+    } else {
+      setImgLoad(null);
+    }
   };
 
   const submitProduct = () => {
     modifStockBySizeAndType();
 
-    console.log(product)
+    console.log(imgs);
+    console.log(imgsLoad);
   };
-
   return (
     <NextUIProvider>
       <div className="flex">
@@ -346,7 +375,48 @@ const AddProduct = () => {
                   ))}
                 </ReactSortable>
                 <div>
-                  <h1 className="text-xl font-bold mt-5">IMAGES OF PRODUCT</h1>
+                  <h1 className="text-xl font-bold my-5">IMAGES OF PRODUCT</h1>
+                  <div className="grid grid-cols-5 gap-4">
+                    {imgsLoad.map((item: any, idx: number) => (
+                      <div key={idx}>
+                        {imgsLoad[idx] == null ? (
+                          <label
+                            htmlFor={`fileUpload_${idx}`}
+                            className="w-full flex flex-col items-center text-center justify-center text-xs text-gray-500 bg-gray-100 p-5 mt-3 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer"
+                          >
+                            <img
+                              width="40"
+                              height="40"
+                              src="https://img.icons8.com/ios/40/upload-to-cloud.png"
+                              alt="upload-to-cloud"
+                            />
+                            <div>
+                              <h3>
+                                Click to upload or drag and drop - index {idx}
+                              </h3>
+                              <p>SVG, PNG, or JPG (Max 5Mb)</p>
+                            </div>
+                          </label>
+                        ) : (
+                          <div className="w-full flex flex-col text-center">
+                            <img src={imgsLoad[idx]} />
+                            <label
+                              htmlFor={`fileUpload_${idx}`}
+                              className="text-[10px] font-medium underline tracking wide"
+                            >
+                              REPLACE
+                            </label>
+                          </div>
+                        )}
+                        <input
+                          id={`fileUpload_${idx}`}
+                          type="file"
+                          onChange={(e) => uploadImgHandler(e, idx)}
+                          className="hidden"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-1 mt-5">
