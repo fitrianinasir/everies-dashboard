@@ -13,7 +13,7 @@ import {
 } from "@nextui-org/react";
 import { ReactSortable } from "react-sortablejs";
 import axios from "axios";
-
+import Swal from "sweetalert2";
 type RawCategory = {
   id: number;
   title: string;
@@ -43,8 +43,8 @@ type PRODUCT = {
   category_id: number;
   type_id: number;
   price: number;
-  stock_by_size: STOCK_BY_SIZE_RESULT[];
-  stock_by_type: STOCK_BY_TYPE_RESULT[];
+  stock_by_size: string;
+  stock_by_type: string;
   img: string;
   rate: number;
   sold: number;
@@ -72,8 +72,8 @@ const AddProduct = () => {
     category_id: 0,
     type_id: 0,
     price: 0,
-    stock_by_size: [],
-    stock_by_type: [],
+    stock_by_size: "",
+    stock_by_type: "",
     img: "",
     rate: 0,
     sold: 0,
@@ -85,7 +85,6 @@ const AddProduct = () => {
     useState<STOCK_BY_SIZE[]>(initialStockBySize);
 
   const [product, setProduct] = useState<PRODUCT>(initialFields);
-  const [imgLoad, setImgLoad] = useState<string | null>(null);
   const [imgsLoad, setImgsLoad] = useState<any>([null, null, null, null, null]);
   const [imgs, setImgs] = useState<any>([null, null, null, null, null]);
 
@@ -181,7 +180,7 @@ const AddProduct = () => {
     setStockBySize(dataTmp);
   };
 
-  const modifStockBySizeAndType = () => {
+  const modifStockBySizeAndType = async() => {
     let stockBySizeResult: STOCK_BY_SIZE_RESULT[] = [];
     let stockByTypeResult: STOCK_BY_TYPE_RESULT[] = [];
 
@@ -220,11 +219,12 @@ const AddProduct = () => {
       }
     });
 
-    setProduct((prev) => ({
-      ...prev,
-      stock_by_size: stockBySizeResult,
-      stock_by_type: stockByTypeResult,
-    }));
+    return {stockBySizeResult, stockByTypeResult}
+    // setProduct((prev) => ({
+    //   ...prev,
+    //   stock_by_size: stockBySizeResult,
+    //   stock_by_type: stockByTypeResult,
+    // }));
   };
 
   const uploadImgHandler = (
@@ -242,22 +242,56 @@ const AddProduct = () => {
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result == "string") {
-          setImgLoad(reader.result);
           imgsLoadTmp[idx] = reader.result;
+          setImgsLoad(imgsLoadTmp);
         }
       };
       reader.readAsDataURL(uploaded_img);
-      setImgsLoad(imgsLoadTmp);
-    } else {
-      setImgLoad(null);
     }
   };
 
-  const submitProduct = () => {
-    modifStockBySizeAndType();
+  const postImages = async () => {
+    let imgPath: any = [];
 
-    console.log(imgs);
-    console.log(imgsLoad);
+    let resources = imgs.filter((img: any) => img !== null);
+    // Use Promise.all to wait for all axios.post calls to complete
+    await Promise.all(
+      resources.map(async (item: any) => {
+        const formData = new FormData();
+        formData.append("image", item);
+
+        try {
+          const res = await axios.post(BASE_URL + "/product/img", formData);
+          imgPath.push(res.data.fileName);
+        } catch (err) {
+          console.error(err);
+        }
+      })
+    );
+
+    return imgPath;
+  };
+
+  const submitProduct = async () => {
+    let data_source = product
+    let {stockBySizeResult, stockByTypeResult} = await modifStockBySizeAndType();
+    const myUploadedImgs = await postImages()
+    data_source.img = JSON.stringify(myUploadedImgs)
+    data_source.stock_by_size = JSON.stringify(stockBySizeResult)
+    data_source.stock_by_type = JSON.stringify(stockByTypeResult)
+
+    axios
+      .post(BASE_URL + "/product", data_source)
+      .then((res) => {
+        Swal.fire({
+          title: "Success!",
+          text: "The data has been saved!",
+          icon: "success",
+        }).then((res) => {
+          
+        });
+      })
+      .catch((err) => console.log(err));
   };
   return (
     <NextUIProvider>
@@ -378,11 +412,11 @@ const AddProduct = () => {
                   <h1 className="text-xl font-bold my-5">IMAGES OF PRODUCT</h1>
                   <div className="grid grid-cols-5 gap-4">
                     {imgsLoad.map((item: any, idx: number) => (
-                      <div key={idx}>
+                      <div key={idx} className="w-full">
                         {imgsLoad[idx] == null ? (
                           <label
                             htmlFor={`fileUpload_${idx}`}
-                            className="w-full flex flex-col items-center text-center justify-center text-xs text-gray-500 bg-gray-100 p-5 mt-3 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer"
+                            className="flex flex-col items-center text-center justify-center text-xs text-gray-500 bg-gray-100 p-5 mt-3 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer"
                           >
                             <img
                               width="40"
@@ -398,8 +432,11 @@ const AddProduct = () => {
                             </div>
                           </label>
                         ) : (
-                          <div className="w-full flex flex-col text-center">
-                            <img src={imgsLoad[idx]} />
+                          <div className="flex flex-col text-center">
+                            <img
+                              src={imgsLoad[idx]}
+                              className="w-[100vh] h-[25rem] object-cover mr-3"
+                            />
                             <label
                               htmlFor={`fileUpload_${idx}`}
                               className="text-[10px] font-medium underline tracking wide"

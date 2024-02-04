@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { BASE_URL } from "../config";
 
 const ProductImgs = ({
   images,
   currActiveVal,
   settingsControl,
-  isActive
+  isActive,
 }: any) => {
   const [active, setActive] = useState(0);
+
 
   const nextHandler = () => {
     if (active < images.length - 1) {
@@ -36,7 +38,7 @@ const ProductImgs = ({
         />
       </div>
       <div className="relative h-56 overflow-hidden">
-        <img src={`images/${images[active]}`} alt="" />
+        <img src={`${BASE_URL}/product/img/${images[active]}`} alt="" />
         <div
           className={`absolute h-full w-full bg-black/50 flex flex-col gap-2 items-center justify-center bottom-0 opacity-100 ${
             isActive === 1 ? "" : "hidden"
@@ -65,10 +67,10 @@ const ProductImgs = ({
           >
             <path
               stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 1 1 5l4 4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
             />
           </svg>
           <span className="sr-only">Previous</span>
@@ -89,10 +91,10 @@ const ProductImgs = ({
           >
             <path
               stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="m1 9 4-4-4-4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
             />
           </svg>
           <span className="sr-only">Next</span>
